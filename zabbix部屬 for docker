@@ -1,0 +1,44 @@
+docker run --name mysql-server -t \ 
+-e MYSQL_DATABASE="zabbix" \ 
+-e MYSQL_USER="zabbix" \ 
+-e MYSQL_PASSWORD="Qaz1234@" \ 
+-e MYSQL_ROOT_PASSWORD="Wsx1234@" \ 
+-d mysql:5.7 \ 
+--character-set-server=utf8 \ 
+--collation-server=utf8_bin 
+######################################## 
+wait 3 
+######################################## 
+docker run --name zabbix-server-mysql -t \ 
+-e DB_SERVER_HOST="mysql-server" \ 
+-e MYSQL_DATABASE="zabbix" \ 
+-e MYSQL_USER="zabbix" \ 
+-e MYSQL_PASSWORD="Qaz1234@" \ 
+-e MYSQL_ROOT_PASSWORD="Wsx1234@" \ 
+-v /ropt/zabbix/zabbix_server:/var/lib/zabbix \ 
+--link mysql-server:mysql \ 
+-p 50051:10051 \ 
+-d zabbix/zabbix-server-mysql:latest 
+######################################## 
+wait 3 
+######################################## 
+docker run --name zabbix-web-nginx-mysql -t \ 
+-e DB_SERVER_HOST="mysql-server" \ 
+-e MYSQL_DATABASE="zabbix" \ 
+-e MYSQL_USER="zabbix" \ 
+-e MYSQL_PASSWORD="Qaz1234@" \ 
+-e MYSQL_ROOT_PASSWORD="Wsx1234@" \ 
+--link mysql-server:mysql \ 
+--link zabbix-server-mysql:zabbix-server \ 
+-e PHP_TZ="Asia/Shanghai" \ 
+-p 50049:80 -p 50050:443 \ 
+-p 50047:8080 -p 50048:8443 \ 
+-d zabbix/zabbix-web-nginx-mysql:latest 
+######################################## 
+wait 3 
+######################################## 
+docker run --name zabbix-agent -t \ 
+--link zabbix-server-mysql:zabbix-server \ 
+-p 50052:10050 \ 
+-d zabbix/zabbix-agent:latest 
+docker ps -a
