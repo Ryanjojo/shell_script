@@ -1,0 +1,24 @@
+#Node_exporter部屬腳本
+
+cd /opt 
+curl -LO https://github.com/prometheus/node_exporter/releases/download/v0.18.1/node_exporter-0.18.1.li$ 
+tar -xvf node_exporter-0.18.1.linux-amd64.tar.gz 
+mv node_exporter-0.18.1.linux-amd64/node_exporter /usr/local/bin/ 
+useradd -rs /bin/false node_exporter 
+cat << OK > /etc/systemd/system/node_exporter.service 
+\rm -r /opt/node_exporter-0.18.1.linux-amd64 
+\rm -r /opt/node_exporter-0.18.1.linux-amd64.tar.gz 
+[Unit] 
+Description=Node Exporter 
+Wants=network-online.target 
+After=network-online.target 
+[Service] 
+Type=simple 
+ExecStart=/usr/local/bin/node_exporter 
+[Install] 
+WantedBy=multi-user.target 
+OK 
+systemctl daemon-reload 
+systemctl enable node_exporter.service 
+systemctl start node_exporter.service 
+systemctl status node_exporter.service
