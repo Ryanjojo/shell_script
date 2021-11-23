@@ -42,3 +42,12 @@ docker run --name zabbix-agent -t \
 -p 50052:10050 \ 
 -d zabbix/zabbix-agent:latest 
 docker ps -a
+
+查看容器IP
+iptables -nL
+docker inspect docker-zabbix-agent | grep IPAddress
+
+#-v file
+/ropt/zabbix-1/server_etc:/etc/zabbix/ 
+/ropt/zabbix-1/server_var:/var/lib/zabbix/
+
