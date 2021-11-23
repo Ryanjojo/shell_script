@@ -1,0 +1,11 @@
+docker run --name jenkins \ 
+        -d --restart always \ 
+        -p 9999:8080 -p 50000:50000 \ 
+        -v /ropt/jenkins:/var/jenkins_home \ 
+        -v /etc/sudoers:/etc/sudoers:ro \ 
+        -v /etc/localtime:/etc/localtime \ 
+        -v /ropt/jenkins/maven:/usr/share/maven \ 
+        --privileged=true \ 
+        -u root \ 
+        -e JAVA_OPTS=-Dfile.encoding=UTF-8 \ 
+        jenkins/jenkins
