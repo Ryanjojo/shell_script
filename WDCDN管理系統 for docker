@@ -1,0 +1,5 @@
+docker run -itd -p 50045:80 -p 50046:8090 --name wdcdn w796933/wdcdn_docker_xiang
+
+參考文黨
+https://www.ruletree.club/archives/654/
+https://github.com/w796933/wdcp_docker_xiang
