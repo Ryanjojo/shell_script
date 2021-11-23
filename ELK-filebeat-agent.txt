@@ -1,0 +1,63 @@
+#!/bin/bash
+rpm --import http://packages.elastic.co/GPG-KEY-elasticsearch
+echo "
+[elastic-7.x]
+name=Elastic repository for 7.x packages
+baseurl=https://artifacts.elastic.co/packages/7.x/yum
+gpgcheck=1
+gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
+enabled=1
+autorefresh=1
+type=rpm-md " > /etc/yum.repos.d/elastic-beats.repo
+yum -y install filebeat
+mv /etc/filebeat/filebeat.yml /etc/filebeat/filebeat.yml.old
+
+cat << OK > /etc/filebeat/filebeat.yml
+
+#=========================== Filebeat inputs =============================
+filebeat.config.inputs:
+  enabled: true
+  path: /etc/filebeat/conf.d/*.yml
+  reload.period: 10s
+  reload.enabled: true
+
+#============================= Filebeat modules ===============================
+
+filebeat.config.modules:
+  path: \${path.config}/modules.d/*.yml
+  #reload.enabled: true
+  # Period on which files under path should be checked for changes
+  #reload.period: 10s
+
+logging.level: error
+#==================== Elasticsearch template setting ==========================
+
+setup.template.settings:
+  index.number_of_shards: 1
+  index.number_of_replicas: 0
+  #index.codec: best_compression
+  #_source.enabled: false
+
+#----------------------------- logstash output --------------------------------
+output.logstash:
+  hosts: ["IP:port"]
+  
+OK
+
+
+#scp root@IP:/etc/filebeat/filebeat.reference.yml /etc/filebeat/
+#scp root@IP:/etc/filebeat/fields.yml /etc/filebeat/
+#scp root@IP:/etc/filebeat/modules.d/* /etc/filebeat/modules.d
+
+mkdir /etc/filebeat/conf.d
+
+echo " 
+- type: log
+  enabled: true
+  paths:
+    - /pme/nginx/log/*.log
+  fields:
+    index: xhgj-sit-nginx "  > /etc/filebeat/conf.d/xhgj-sit-nginx.yml
+	
+systemctl start filebeat
+systemctl status filebeat

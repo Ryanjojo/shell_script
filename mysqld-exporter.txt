@@ -1,0 +1,36 @@
+#!/bin/bash
+echo "
+[Unit]
+Description=mysqld-exporter
+After=network.target
+
+[Service]
+#User=DC
+#Group=DC
+Type=simple
+ExecStart=/etc/mysqld_exporter/mysqld_exporter --config.my-cnf /etc/mysqld_exporter/.my.cnf
+
+[Install]
+WantedBy=multi-user.target" > /etc/systemd/system/mysqld_exporter.service
+
+echo "
+[client]
+host=127.0.0.1
+user=exporter
+password=BXkG5WHzAC7CCRjtKbAZnQ" > /etc/mysqld_exporter/.my.cnf
+
+mkdir /opt/mysqld_exporter
+mkdir /etc/mysqld_exporter
+cd /opt/mysqld_exporter
+wget https://github.com/prometheus/mysqld_exporter/releases/download/v0.12.1/mysqld_exporter-0.12.1.linux-amd64.tar.gz
+tar -xvf mysqld_exporter-0.12.1.linux-amd64.tar.gz
+cp -r ./mysqld_exporter-0.12.1.linux-amd64/mysqld_exporter /etc/mysqld_exporter
+cp -r ./mysqld_exporter-0.12.1.linux-amd64/mysqld_exporter /usr/local/bin/
+chmod +x /usr/local/bin/mysqld_exporter
+chmod 777 /opt/mysqld_exporter -R
+chmod 777 /opt/mysqld_exporter -R
+systemctl enable mysqld_exporter
+systemctl daemon-reload
+systemctl stop mysqld_exporter
+systemctl start mysqld_exporter
+systemctl status mysqld_exporter	
