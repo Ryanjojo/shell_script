@@ -1,0 +1,33 @@
+def getHost(){ 
+    def remote = [:] 
+    remote.name = '测试机' 
+    remote.host = '16.163.10.25' 
+    remote.user = 'root' 
+    remote.password = 'rq4hvKv0CK8LuqYk' 
+    remote.allowAnyHosts = true 
+    return remote 
+} 
+pipeline { 
+    agent any 
+    environment{ 
+        def server = '' 
+    }    
+    stages { 
+        stage('init-server'){ 
+            steps { 
+                script {                  
+                   server = getHost()                                    
+                } 
+            } 
+        } 
+        stage('Remote SSH') { 
+            steps { 
+                 script { 
+                     sshCommand remote: server, command: "ls /tmp/" 
+                 } 
+                //sshCommand remote: server, command: "ls -l" 
+                 
+            } 
+        } 
+    } 
+}
