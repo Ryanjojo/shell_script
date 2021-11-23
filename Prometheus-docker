@@ -1,0 +1,60 @@
+Prometheus-docker腳本
+-v會有問題,須先行啟動後cp prometheus.yml到外部在-v進行持久化
+
+#####Prometheus##### 
+docker run -d -p 50045:9090 -p 35000-35100:35000-35100 \ 
+        -u root \ 
+        -v /ropt/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml \ 
+        -v /ropt/prometheus/share:/usr/share/prometheus \ 
+        --name prometheus prom/prometheus \ 
+        --config.file=/etc/prometheus/prometheus.yml \ 
+        --storage.tsdb.path=/prometheus 
+#-v /ropt/prometheus/config/prometheus.yml:/etc/prometheus/prometheus.yml \ 
+#-v /ropt/prometheus/share:/usr/share/prometheus \ 
+#####Grafana:#### 
+docker run -d  -p 50046:3000 \ 
+        --link prometheus \ 
+        --name grafana  grafana/grafana 
+# -v /ropt/grafana:/etc/grafana \ 
+#####node_exporter##### 
+docker run -d --link prometheus \ 
+        --name node_exporter -p 9100:9100 \ 
+        prom/node-exporter:latest \ 
+        --path.rootfs=/host
+
+#prometheus.yml -更新後須重啟容器
+
+# my global config 
+global: 
+  scrape_interval: 15s # Set the scrape interval to every 15 seconds. Default is every 1 minute. 
+  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute. 
+  # scrape_timeout is set to the global default (10s). 
+# Alertmanager configuration 
+alerting: 
+  alertmanagers: 
+    - static_configs: 
+        - targets: 
+          # - alertmanager:9093 
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'. 
+rule_files: 
+  # - "first_rules.yml" 
+  # - "second_rules.yml" 
+# A scrape configuration containing exactly one endpoint to scrape: 
+# Here it's Prometheus itself. 
+scrape_configs: 
+  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config. 
+  - job_name: "prometheus" 
+    # metrics_path defaults to '/metrics' 
+    # scheme defaults to 'http'. 
+    static_configs: 
+      metrics_path: /metrics 
+      scheme: http 
+      - targets: ["localhost:9090"] 
+  - job_name: 'node_exporter_metrics' 
+    scrape_interval: 5s 
+    metrics_path: /metrics 
+    scheme: http 
+    static_configs: 
+      - targets: ['18.162.75.252:9100'] 
+      - targets: ['104.250.53.152:9100']
+      
