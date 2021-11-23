@@ -1,0 +1,36 @@
+version: '2'
+services:
+  gitlab:
+    image: gitlab/gitlab-ce:12.0.3-ce.0
+    container_name: gitlab
+    ports:
+      - "18889:9022"
+      - "18890:8090"
+      - "18891:22"
+      - "18892:80"
+      - "18893:443"
+    volumes:
+      - "/opt/gitlab/cfg:/etc/gitlab"
+      - "/opt/gitlab/logs:/var/log/gitlab"
+      - "/opt/gitlab/data:/var/opt/gitlab"
+    networks:
+      - git
+
+  jenkins:
+    image: jenkins/jenkins:lts
+    user: root
+    container_name: jenkins
+    ports:
+      - "18894:8091"
+      - "18895:8080"
+      - "18896:50000"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "/opt/jenkins:/var/jenkins_home"
+      - "/usr/bin/docker:/usr/bin/docker"
+    networks:
+      - git
+
+networks:
+  git:
+    driver: bridge
