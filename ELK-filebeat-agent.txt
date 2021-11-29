@@ -59,7 +59,17 @@ echo "
     - /var/log/*.log
   fields:
     index: xhgj-sit-nginx "  > /etc/filebeat/conf.d/xhgj-sit-nginx.yml
-	
+
+echo "
+- type: log
+  enabled: true
+  paths:
+    - /var/log/*.log
+  fields:
+    index: xhgj-mylog "  > /etc/filebeat/conf.d/xhgj-mylog.yml
+
+
+
 systemctl start filebeat
 systemctl status filebeat
 #
