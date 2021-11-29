@@ -29,7 +29,7 @@ filebeat.config.modules:
   # Period on which files under path should be checked for changes
   #reload.period: 10s
 
-logging.level: error
+#logging.level: error
 #==================== Elasticsearch template setting ==========================
 
 setup.template.settings:
