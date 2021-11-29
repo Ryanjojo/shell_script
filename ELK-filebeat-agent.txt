@@ -61,3 +61,7 @@ echo "
 	
 systemctl start filebeat
 systemctl status filebeat
+#
+#systemctl restart filebeat
+#rm -f /var/lib/filebeat/filebeat.lock
+#filebeat -e
