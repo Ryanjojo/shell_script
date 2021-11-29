@@ -56,6 +56,7 @@ echo "
   enabled: true
   paths:
     - /pme/nginx/log/*.log
+    - /var/log/*.log
   fields:
     index: xhgj-sit-nginx "  > /etc/filebeat/conf.d/xhgj-sit-nginx.yml
 	
