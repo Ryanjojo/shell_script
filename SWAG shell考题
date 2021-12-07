@@ -1,0 +1,22 @@
+####输入值做判断  3的倍数 显示 Been  5的倍数  显示  Teen  都不是则显示som   ####
+
+####输入数值且存取####
+echo -n "num:"
+read n
+
+###  a除3  判断是不是3的倍数    #####
+###  b除5  判断是不是5的倍数    #####
+
+a=`expr $n % 3`
+b=`expr $n % 5`
+
+
+###  if 去做判断  如果被3除尽 则显示Been  如果被5除尽  则显示 Teen  都没除尽有余数  则显示son  ####
+
+if [ $a = 0 ];then
+   echo "Been"
+elif [ $b = 0 ];then
+   echo "Teen"
+else
+   echo "som"
+fi
