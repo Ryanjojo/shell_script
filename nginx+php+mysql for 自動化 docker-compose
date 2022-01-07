@@ -1,0 +1,92 @@
+mkdir /opt/nplm
+mkdir /opt/nplm/php
+
+cat << OK > /opt/nplm/docker-compose.yml
+
+version: "3"
+
+services:
+  mysql:
+    hostname: mysql
+    restart: always
+    image: mysql:5.7
+    ports:
+       - "53306:3306"
+#    volumes:
+#      - ${PWD}/mysql/conf:/etc/mysql
+#      - ${PWD}/mysql/log:/var/log/mysql
+#      - ${PWD}/mysql/data:/var/lib/mysql
+#      - ${PWD}/mysql/init:/var/lib//docker-entrypoint-initdb.d/ #初始化文件
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: user
+      MYSQL_PASSWORD: user123456
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    networks:
+       - netweb
+  php:
+    hostname: php
+    image: php:7.3-fpm
+    restart: always
+    build:
+       context: ${PWD}/php
+       dockerfile: Dockerfile
+    ports:
+       - "59000:9000"
+#    volumes:
+#      - ${PWD}/html:/var/www/html
+#      - ${PWD}/php/conf:/usr/local/etc
+#    depends_on:
+#       - "mysql"
+    networks:
+       - netweb
+  nginx:
+    hostname: nginx
+    restart: always
+    image: nginx
+#    depends_on:     #依赖关系，需要先运行php
+#      - "mysql"
+#      - "php"
+    networks:
+       - netweb
+    ports:
+      - "50080:80"
+      - "50443:443"
+ #   volumes:
+ #     - ${PWD}/nginx/conf:/etc/nginx/conf.d
+ #     - ${PWD}/nginx/ssl:/etc/nginx/ssl
+ #     - ${PWD}/nginx/log:/var/log/nginx
+ #     - ${PWD}/html:/usr/share/nginx/html
+networks:
+  netweb:
+    external:
+      name: netweb
+
+OK
+
+
+cat << OK > /opt/nplm/php/Dockerfile
+
+FROM php:7.4-fpm
+RUN apt-get update && apt-get install -y \
+        zlib1g-dev libzip-dev \
+        libfreetype6-dev \
+        libjpeg62-turbo-dev \
+        libmcrypt-dev \
+        libpng-dev \
+        libmemcached-dev \
+        zlib1g-dev \
+        libcurl4-openssl-dev \
+        libxml2-dev \
+        --no-install-recommends && rm -rf /var/lib/apt/lists/* \
+    && docker-php-ext-install -j$(nproc) \
+        gettext mysqli pdo_mysql zip \
+        bcmath opcache sockets soap \
+    && docker-php-ext-configure gd  --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) gd \
+   &&  apt-get install -y iputils-ping \
+    && docker-php-ext-install mysqli && docker-php-ext-enable mysqli
+
+CMD ["php-fpm", "-F"]
+
+OK
