@@ -1,0 +1,16 @@
+#zookeeper
+docker run -d --name zookeeper -p 52181:2181 -t wurstmeister/zookeeper 
+#kafka
+docker run --name kafka01 \ 
+-p 59092:9092 \ 
+-e KAFKA_BROKER_ID=0 \ 
+-e KAFKA_ZOOKEEPER_CONNECT=172.20.2.178:52181 \ 
+-e KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://172.20.2.178:59092 \ 
+-e KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092 \ 
+--link zookeeper \
+-d  wurstmeister/kafka 
+# kafka tools-ui 
+docker run -d -p 59001:9000 -eZK_HOSTS=172.20.2.178:52181 \ 
+--link zookeeper \ 
+--link kafka01 \ 
+solsson/kafka-manager
