@@ -1,0 +1,58 @@
+if [ -d "/opt/redis_test" ]; then
+        rm -rf /opt/redis_test
+        mkdir /opt/redis_test
+        mkdir /opt/redis_test/includes
+else
+        mkdir /opt/redis_test
+        mkdir /opt/redis_test/includes
+fi
+
+cat << OK > /opt/redis_test/docker-compose.yml
+version: '3.1'
+
+services:
+  redis6379:
+    image: redis:alpine
+    container_name: Test_6379
+    restart: always
+    ports:
+      - 6379:6379
+
+  redis-admin:
+    image: erikdubbelboer/phpredisadmin
+    container_name: redisAdminer
+    restart: always
+    links:
+      - redis6379
+    ports:
+      - 58081:80
+    volumes:
+      - /opt/redis_test/includes/config.inc.php:/src/app/includes/config.inc.php
+OK
+
+touch /opt/redis_test/includes/config.inc.php
+cd /opt/redis_test && docker-compose -p depends_on up -d
+docker ps -a
+
+##############################################
+
+if [ -f "/opt/redis_test/includes/config.inc.php" ]; then
+        rm -rf /opt/redis_test/includes/config.inc.php
+fi
+
+#以下php檔如果內容不同,需自行修改才能正常顯示
+cat << XD > /opt/redis_test/includes/config.inc.php
+<?php
+include 'config.sample.inc.php';
+$config['servers'] = array();
+$config['servers'][] = array(
+  'name'   => "Test_6379", # 顯示在 RedisAdmin 頁面上的名稱，可以隨意亂取名
+  'host'   => "Test_6379", # Redis 容器名稱
+  'port'   => "6379",      # Redis Port
+  'filter' => '*',
+);
+?>
+
+XD
+
+cat /opt/redis_test/includes/config.inc.ph
