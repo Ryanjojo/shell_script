@@ -1,0 +1,78 @@
+#自架聊天系統 - rocket.chat for docker-compose.yml
+
+version: '2'
+
+services:
+  rocketchat:
+    image: registry.rocket.chat/rocketchat/rocket.chat:4.0.0
+    command: >
+      bash -c
+	"for i in `seq 1 30`; do
+          node main.js &&
+          s=$$? && break || s=$$?;
+          echo \"Tried $$i times. Waiting 5 secs...\";
+          sleep 5;
+        done; (exit $$s)"
+    restart: unless-stopped
+    environment:
+      - PORT=3000
+      - ROOT_URL=http://localhost:3000
+      - MONGO_URL=mongodb://mongo:27017/rocketchat
+      - MONGO_OPLOG_URL=mongodb://mongo:27017/local
+    depends_on:
+      - mongo
+    ports:
+      - 58888:3000
+    labels:
+      - "traefik.backend=rocketchat"
+      - "traefik.frontend.rule=Host: your.domain.tld"
+
+  mongo:
+    image: mongo:4.0
+    restart: unless-stopped
+    command: mongod --smallfiles --oplogSize 128 --replSet rs0 --storageEngine=mmapv1
+    labels:
+      - "traefik.enable=false"
+
+  mongo-init-replica:
+    image: mongo:4.2
+    command: >
+      bash -c
+	"for i in `seq 1 30`; do
+          mongo mongo/rocketchat --eval \"
+            rs.initiate({
+              _id: 'rs0', 
+              members: [ { _id: 0, host: 'localhost:27017' } ]})\" &&
+          s=$$? && break || s=$$?;
+          echo \"Tried $$i times. Waiting 5 secs...\";
+          sleep 5;
+        done; (exit $$s)"
+    depends_on:
+      - mongo
+  hubot:
+    image:  rocketchat/hubot-rocketchat
+    restart: unless-stopped
+    environment:
+      - ROCKETCHAT_URL=rocketchat:3000
+      - ROCKETCHAT_ROOM=general
+      - RESPOND_TO_DM=true
+      - ROCKETCHAT_USER=bot
+      - ROCKETCHAT_PASSWORD=bot
+      - ROCKETCHAT_AUTH=password
+      - BOT_NAME=bot
+ # 你可以在這裡添加更多你想要的腳本，它們需要通過 npm 安裝
+      - EXTERNAL_SCRIPTS=hubot-help,hubot-seen,hubot-links,hubot-diagnostics  
+    depends_on: 
+      - rocketchat
+    labels:
+      - "traefik.enable=false"
+ #   volumes:
+ #     - ./scripts:/home/hubot/scripts
+    ports:
+      - 58889:8080
+      
+      
+      
+####docker run版本####
+#  docker run --name db -d mongo:3.0 --smallfiles
+#  docker run --name rocketchat -p 58888:3000 --env ROOT_URL=http://192.168.56.102 --link db -d rocket.chat:0.62
