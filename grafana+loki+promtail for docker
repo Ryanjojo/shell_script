@@ -1,0 +1,48 @@
+ersion: "3.4"
+
+networks:
+  loki:
+
+x-logging:
+  &loki-logging
+  driver: loki
+  options:
+    loki-url: "http://192.168.56.102:53100/loki/api/v1/push"
+    max-size: "50m"
+    max-file: "10"
+
+services:
+  loki:
+    image: grafana/loki
+    restart: always
+    environment:
+      - TZ=Asia/Shanghai
+      - LANG=zh_CN.UTF-8
+    ports:
+      - 53100:3100
+    networks:
+      - loki
+    logging: *loki-logging
+
+  promtail:
+    image: grafana/promtail
+    restart: always
+    environment:
+      - TZ=Asia/Shanghai
+      - LANG=zh_CN.UTF-8
+    networks:
+      - loki
+    logging: *loki-logging
+
+  grafana:
+    image: grafana/grafana:master
+    restart: always
+    environment:
+      - TZ=Asia/Shanghai
+      - LANG=zh_CN.UTF-8
+    ports:
+      - 53000:3000
+    networks:
+      - loki
+    logging: *loki-logging
+
