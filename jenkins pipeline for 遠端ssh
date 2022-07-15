@@ -1,9 +1,9 @@
 def getHost(){ 
     def remote = [:] 
     remote.name = '测试机' 
-    remote.host = '16.163.10.25' 
+    remote.host = '主機IP' 
     remote.user = 'root' 
-    remote.password = 'rq4hvKv0CK8LuqYk' 
+    remote.password = '密碼' 
     remote.allowAnyHosts = true 
     return remote 
 } 
